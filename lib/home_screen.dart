@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,6 +11,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<String> _friendRequests = ['Friend 1', 'Friend 2', 'Friend 3'];
+
+  @override
+  void initState() {
+    super.initState();
+    HomeViewModel().getFriendRequests();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,13 +76,45 @@ class _HomeScreenState extends State<HomeScreen> {
                           _viewModel.searchResults.isNotEmpty
                               ? Card(
                                   child: ListTile(
-                                    leading: Icon(Icons.person),
-                                    title: Text(_viewModel
-                                        .searchResults[0].accountName),
-                                    subtitle: Text(
-                                        _viewModel.searchResults[0].accountId),
+                                  leading: _viewModel.searchResults[0]
+                                                  .accountIconUrl !=
+                                              null &&
+                                          _viewModel.searchResults[0]
+                                              .accountIconUrl!.isNotEmpty
+                                      ? ClipOval(
+                                          child: AspectRatio(
+                                            aspectRatio: 1 / 1, // アスペクト比を1:1に設定
+                                            child: Image.network(
+                                                _viewModel.searchResults[0]
+                                                    .accountIconUrl!,
+                                                fit: BoxFit.cover),
+                                          ),
+                                        )
+                                      : Icon(
+                                          IconData(
+                                            _viewModel.searchResults[0]
+                                                .accountIconCodePoint!,
+                                            fontFamily: 'MaterialIcons',
+                                          ),
+                                        ),
+                                  title: Text(
+                                      _viewModel.searchResults[0].accountName),
+                                  subtitle: Text(
+                                      _viewModel.searchResults[0].accountId),
+                                  trailing: IconButton(
+                                    icon: Icon(
+                                      Icons.add,
+                                      size: 30,
+                                    ),
+                                    color: Colors.green,
+                                    iconSize: 30.0,
+                                    onPressed: () {
+                                      String friendId =
+                                          _viewModel.friendIdController.text;
+                                      _viewModel.addFriendRequest(friendId);
+                                    },
                                   ),
-                                )
+                                ))
                               : Text('検索結果はありません。'),
                         ],
                       ),
@@ -89,15 +128,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  _friendRequests.isNotEmpty
+                  _viewModel.friendsearchResults.isNotEmpty
                       ? Expanded(
                           child: ListView.builder(
-                            itemCount: _friendRequests.length,
+                            itemCount: _viewModel.friendsearchResults.length,
                             itemBuilder: (context, index) {
                               return Card(
                                 child: ListTile(
                                   leading: const Icon(Icons.person),
-                                  title: Text(_friendRequests[index]),
+                                  title: Text(_viewModel
+                                      .friendsearchResults[index].accountName),
+                                  subtitle: Text(_viewModel
+                                      .friendsearchResults[index].accountId),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
@@ -129,8 +171,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: HomeScreen(),
-  ));
-}
+// void main() {
+//   runApp(MaterialApp(
+//     home: HomeScreen(),
+//   ));
+// }
